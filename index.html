@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz DevMayCry</title>
+<meta name="description" content="Teste o que você aprendeu nos posts do DevMayCry. Errou? O quiz explica o porquê.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&family=Kaushan+Script&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0a1a33; --navy-2:#0f2444; --ink:#070f1f; --line:#2b4775;
+  --text:#eef3fb; --soft:#c8d6ee; --blue:#8fb4f0; --gold:#f5c518;
+  --green:#7ce3a6; --orange:#ff8a4c;
+  --sans:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;min-height:100vh;color:var(--text);font:400 17px/1.5 var(--sans);
+  background-color:var(--navy);
+  background-image:linear-gradient(rgba(143,180,240,.05) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(143,180,240,.05) 1px,transparent 1px);
+  background-size:36px 36px;
+}
+.wrap{max-width:680px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:24px}
+.logo{font:400 28px/1 "Kaushan Script",cursive;color:var(--gold);text-decoration:none}
+.pill{font:400 14px/1 var(--mono);color:var(--blue);border:2px solid var(--line);border-radius:99px;padding:8px 14px;white-space:nowrap}
+h1{font-size:clamp(44px,12vw,72px);line-height:.98;letter-spacing:-.03em;margin:0 0 12px}
+h2{font-size:clamp(24px,5.4vw,32px);line-height:1.18;letter-spacing:-.015em;margin:0 0 20px}
+p{margin:0 0 16px}
+.comment{font:400 15px/1.5 var(--mono);color:var(--gold);margin:0 0 8px}
+.lead{color:var(--soft);font-size:19px;max-width:32em}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+
+/* A escada: sobe a cada acerto, como o limite de um cartão novo. */
+.stairs{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:112px;margin:0 0 28px;padding:0 0 26px;position:relative;border-bottom:2px solid var(--line)}
+.step{position:relative;height:var(--h,6%);min-height:6px;border-radius:4px 4px 0 0;background:var(--navy-2);border:2px solid var(--line);border-bottom:0;transition:height .45s cubic-bezier(.2,.9,.3,1.2),background-color .2s}
+.step::after{content:attr(data-day);position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);font:400 12px/1 var(--mono);color:var(--blue)}
+.step.ok{background:var(--blue);border-color:var(--blue)}
+.step.bad{background:var(--orange);border-color:var(--orange)}
+.step.now{border-color:var(--gold);border-style:dashed}
+.step.peak{background:var(--gold);border-color:var(--gold);box-shadow:0 0 22px rgba(245,197,24,.55)}
+.stairs.big{height:190px}
+
+.options{display:grid;gap:10px;margin:0 0 20px}
+.opt{width:100%;text-align:left;display:flex;gap:12px;align-items:flex-start;padding:14px 16px;font:500 17px/1.4 var(--sans);color:var(--text);background:var(--ink);border:2px solid var(--line);border-radius:10px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--blue)}
+.opt:disabled{cursor:default;opacity:.55}
+.opt .key{font:400 14px/1.7 var(--mono);color:var(--blue);flex:none}
+.opt.right{border-color:var(--green);opacity:1}
+.opt.wrong{border-color:var(--orange);opacity:1}
+
+.term{background:var(--ink);border:2px solid var(--line);border-radius:12px;overflow:hidden;margin:0 0 20px}
+.term.good{border-color:var(--green)}
+.term.miss{border-color:var(--orange)}
+.term .bar{display:flex;gap:7px;padding:11px 14px;border-bottom:2px solid var(--line)}
+.term .bar i{width:10px;height:10px;border-radius:50%;background:#34507f}
+.term .body{padding:16px}
+.term h3{font:700 18px/1.3 var(--mono);margin:0 0 10px}
+.term.good h3{color:var(--green)} .term.miss h3{color:var(--orange)}
+.term p:last-child{margin-bottom:0}
+.src{font:400 14px/1.5 var(--mono)}
+
+.btn{display:inline-block;width:100%;padding:15px 20px;font:700 18px/1.2 var(--sans);color:var(--ink);background:var(--gold);border:2px solid var(--gold);border-radius:10px;cursor:pointer;text-align:center;text-decoration:none}
+.btn:hover{background:#ffd93b}
+.btn.ghost{background:transparent;color:var(--text);border-color:var(--line);margin-top:10px}
+.btn.ghost:hover{border-color:var(--blue);background:transparent}
+.list{display:grid;gap:10px;margin:0 0 20px}
+.score{font:700 clamp(56px,16vw,88px)/1 var(--sans);letter-spacing:-.03em;margin:0 0 4px}
+.score small{font-size:.42em;color:var(--blue);font-weight:500;letter-spacing:0}
+.review h3{font:500 17px/1.4 var(--sans);color:var(--text);margin:0 0 10px}
+.review .fix{color:var(--green);font:400 15px/1.5 var(--mono);margin:0 0 8px}
+footer{margin-top:32px;font:400 14px/1.6 var(--mono);color:var(--blue)}
+.social{display:flex;flex-wrap:wrap;gap:8px 24px}
+.social a{display:inline-block;padding:6px 0}
+@media (prefers-reduced-motion:reduce){.step{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="logo" href="./">DevMayCry</a>
+    <span class="pill" id="pill" aria-live="polite"></span>
+  </header>
+  <main id="app"></main>
+  <footer>
+    <nav class="social" aria-label="Redes sociais do DevMayCry">
+      <a href="https://www.instagram.com/_devmaycry/" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://www.threads.com/@_devmaycry" target="_blank" rel="noopener">Threads</a>
+      <a href="https://x.com/_devmaycry" target="_blank" rel="noopener">X</a>
+      <a href="https://www.tiktok.com/@devmaycry_" target="_blank" rel="noopener">TikTok</a>
+    </nav>
+  </footer>
+</div>
+
+<script>
+/* ==========================================================================
+   COMO ADICIONAR UM POST NOVO
+   Copie um bloco dentro de POSTS e troque o conteúdo.
+   - id: vira o link direto, por exemplo index.html?post=ip-warmup
+   - questions: use 7 perguntas, uma para cada dia da escada
+   - options: uma opção com ok:true; todas precisam de "why", a explicação
+   O código abaixo de POSTS não precisa mudar.
+   ========================================================================== */
+const SRC = {
+  resendWarm: {label:'Resend: guia de warm-up', url:'https://resend.com/docs/knowledge-base/warming-up'},
+  resendIp:   {label:'Resend: como funcionam IPs dedicados', url:'https://resend.com/docs/knowledge-base/how-do-dedicated-ips-work'},
+  aws:        {label:'AWS SES: warmup de IPs dedicados', url:'https://docs.aws.amazon.com/ses/latest/dg/dedicated-ip-warming.html'},
+  google:     {label:'Google: FAQ para remetentes', url:'https://support.google.com/mail/answer/14229414?hl=en'},
+  yahoo:      {label:'Yahoo Sender Hub', url:'https://senders.yahooinc.com/best-practices'}
+};
+
+const POSTS = [
+  {
+    id: 'ip-warmup',
+    title: 'IP Warmup',
+    hook: 'Como cartão novo, IP novo começa enviando pouco. Passe pelos 7 dias de aquecimento e veja até onde sua reputação sobe.',
+    questions: [
+      {
+        q: 'Uma loja trocou de IP e quer enviar 50 mil e-mails hoje. O que você faz?',
+        source: SRC.aws,
+        options: [
+          {ok:true, t:'Sobe o volume em etapas, ao longo de dias', why:'O provedor ainda não conhece esse IP. Subir aos poucos cria histórico, como usar um cartão novo sem estourar o limite.'},
+          {t:'Envia tudo hoje para aproveitar a campanha', why:'Um pico vindo de um IP sem histórico assusta os provedores. O resultado pode ser limite de entrega ou bloqueio.'},
+          {t:'Envia tudo de madrugada, quando há menos tráfego', why:'O horário não muda o problema. O provedor olha o volume e o histórico, e 50 mil de um IP novo continua sendo um pico.'}
+        ]
+      },
+      {
+        q: 'Por que um IP novo precisa de warmup?',
+        source: SRC.aws,
+        options: [
+          {ok:true, t:'Ele não tem histórico e os provedores desconfiam', why:'Sem histórico não há como saber se o remetente é confiável. É por isso que os provedores aceitam menos e-mail de IPs novos.'},
+          {t:'Ele envia e-mails mais devagar', why:'A velocidade do IP não é o problema. Quem limita a entrega é o provedor, por falta de confiança.'},
+          {t:'O DNS ainda não terminou de propagar', why:'DNS é outro assunto. O warmup existe para construir reputação, não para esperar uma configuração.'}
+        ]
+      },
+      {
+        q: 'Para quem você envia primeiro durante o warmup?',
+        source: SRC.aws,
+        options: [
+          {ok:true, t:'Para quem mais interage com seus e-mails', why:'Pessoas engajadas reclamam menos. Assim a taxa de reclamação fica baixa enquanto o volume sobe.'},
+          {t:'Para a lista inteira, de uma vez', why:'Isso cria o pico que o warmup tenta evitar, e ainda inclui quem pode marcar o e-mail como spam.'},
+          {t:'Para contatos antigos e inativos', why:'Contatos parados têm mais risco de bounce e de reclamação. Deixe esses para depois, ou limpe a lista.'}
+        ]
+      },
+      {
+        q: 'Qual é a meta de taxa de spam no Gmail?',
+        source: SRC.google,
+        options: [
+          {ok:true, t:'Abaixo de 0,1%', why:'O Google pede para ficar abaixo de 0,1% e nunca chegar a 0,3%. Acima de 0,1%, a entrega já pode piorar para quem envia em massa.'},
+          {t:'Exatamente 0,3%', why:'0,3% é o teto, não a meta. Pense numa estrada: a meta é dirigir com folga, não encostar no ponto da multa.'},
+          {t:'Abaixo de 1%', why:'1% é mais de três vezes o limite de 0,3%. A taxa precisa ficar bem mais baixa, abaixo de 0,1%.'}
+        ]
+      },
+      {
+        q: 'Um cliente novo envia 20 mil e-mails por mês. IP dedicado é uma boa ideia?',
+        source: SRC.resendIp,
+        options: [
+          {ok:true, t:'Não, o volume é baixo demais para manter o IP aquecido', why:'A Resend avisa que menos de 90 mil e-mails por mês pode não bastar. Além disso, ele é um remetente novo, sem histórico.'},
+          {t:'Sim, porque ele sai dos vizinhos ruins', why:'Sair dos vizinhos é uma vantagem real, mas não resolve tudo. Com pouco volume, o IP não ganha histórico suficiente.'},
+          {t:'Sim, IP dedicado sempre melhora a entrega', why:'A Resend diz que IP dedicado não é solução mágica. Ele também expõe mais o seu comportamento de envio.'}
+        ]
+      },
+      {
+        q: 'A taxa de spam subiu no meio do warmup. O que você faz?',
+        source: SRC.resendWarm,
+        options: [
+          {ok:true, t:'Reduz o ritmo e investiga a causa', why:'Esse é o sinal de que o plano precisa desacelerar. O guia da Resend usa como referência bounce abaixo de 4% e spam abaixo de 0,08%.'},
+          {t:'Aumenta o volume para diluir a taxa', why:'Mais volume para a mesma lista ruim gera mais reclamações, e o provedor passa a ver um problema maior.'},
+          {t:'Troca de IP e continua no mesmo ritmo', why:'A causa continua lá. Você perderia o histórico do IP e levaria o mesmo problema para o novo.'}
+        ]
+      },
+      {
+        q: 'A reputação do seu domínio está ruim. Trocar de IP resolve?',
+        source: SRC.yahoo,
+        options: [
+          {ok:true, t:'Não, a reputação do domínio vai junto com você', why:'IP e domínio têm reputações separadas, e o domínio acompanha sua marca em qualquer IP. Hoje os provedores dão muito peso a ele.'},
+          {t:'Sim, IP novo significa começar do zero', why:'Só o IP começa do zero. O domínio continua sendo o mesmo, com o mesmo histórico ruim.'},
+          {t:'Sim, desde que seja um IP dedicado', why:'Ter um IP só seu não apaga o histórico do domínio. É preciso corrigir a causa, como lista ruim ou reclamações.'}
+        ]
+      }
+    ],
+    ranks: [
+      {min:7, title:'Caixa de entrada', text:'Reputação no topo. Você sabe aquecer um IP do começo ao fim.'},
+      {min:5, title:'IP aquecido', text:'Sua reputação subiu bem. Revise os erros abaixo para chegar aos 7.'},
+      {min:3, title:'Entrega limitada', text:'Parte dos seus e-mails passou. Leia as explicações e tente de novo.'},
+      {min:0, title:'IP bloqueado', text:'O provedor desconfiou desta vez. As explicações abaixo mostram o caminho.'}
+    ]
+  }
+];
+
+/* ---------- Motor do jogo ---------- */
+const app = document.getElementById('app');
+const pill = document.getElementById('pill');
+const params = new URLSearchParams(location.search);
+let post, day, answers;
+
+function el(tag, attrs, ...kids){
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})){
+    if (k === 'class') n.className = v;
+    else if (k === 'on') n.addEventListener('click', v);
+    else n.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k != null) n.append(k);
+  return n;
+}
+const shuffle = a => {
+  const c = [...a];
+  for (let i = c.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [c[i], c[j]] = [c[j], c[i]];
+  }
+  return c;
+};
+function store(key, value){
+  try {
+    if (value === undefined) return localStorage.getItem(key);
+    localStorage.setItem(key, value);
+  } catch (e) { return null; }
+}
+function show(...nodes){
+  app.replaceChildren(...nodes.flat().filter(n => n != null));
+  window.scrollTo(0, 0);
+}
+
+function stairs(big){
+  const total = post.questions.length;
+  const box = el('div', {class:'stairs' + (big ? ' big' : ''), role:'img',
+    'aria-label': answers.filter(a => a.ok).length + ' acertos em ' + answers.length + ' dias respondidos'});
+  let score = 0;
+  for (let i = 0; i < total; i++){
+    const a = answers[i];
+    if (a && a.ok) score++;
+    const h = a ? 8 + (score / total) * 92 : 6;
+    const peak = big && a && a.ok && score === total;
+    const cls = 'step' + (a ? (a.ok ? ' ok' : ' bad') : '') + (i === day && !a ? ' now' : '') + (peak ? ' peak' : '');
+    box.append(el('div', {class:cls, 'data-day':'d' + (i + 1), style:'--h:' + h + '%'}));
+  }
+  return box;
+}
+
+function home(){
+  pill.textContent = 'quiz';
+  show(
+    el('h1', {}, 'Quiz DevMayCry'),
+    el('p', {class:'lead'}, 'Escolha um post e veja se entendeu. Errou? O quiz explica o porquê.'),
+    el('div', {class:'list'}, POSTS.map(p =>
+      el('a', {class:'btn ghost', href:'?post=' + encodeURIComponent(p.id)}, p.title)))
+  );
+}
+
+function start(){
+  day = 0; answers = [];
+  pill.textContent = post.title.toLowerCase();
+  const best = store('dmc-best-' + post.id);
+  show(
+    el('p', {class:'comment'}, '// quiz do post'),
+    el('h1', {}, post.title),
+    el('p', {class:'lead'}, post.hook),
+    stairs(false),
+    best !== null ? el('p', {class:'src'}, 'Seu recorde: ' + best + ' de ' + post.questions.length) : null,
+    el('button', {class:'btn', type:'button', on:ask}, 'Começar o dia 1')
+  );
+}
+
+function ask(){
+  const q = post.questions[day];
+  pill.textContent = 'dia ' + (day + 1) + ' de ' + post.questions.length;
+  const opts = shuffle(q.options);
+  const list = el('div', {class:'options'}, opts.map((o, i) =>
+    el('button', {class:'opt', type:'button', on:() => answer(q, o, opts, list)},
+      el('span', {class:'key', 'aria-hidden':'true'}, String(i + 1)), el('span', {}, o.t))));
+  show(stairs(false), el('h2', {}, q.q), list);
+  list.querySelector('button').focus({preventScroll:true});
+}
+
+function answer(q, chosen, opts, list){
+  if (answers[day]) return;
+  const right = q.options.find(o => o.ok);
+  answers[day] = {ok: !!chosen.ok, q, chosen, right};
+  [...list.children].forEach((b, i) => {
+    b.disabled = true;
+    if (opts[i].ok) b.classList.add('right');
+    else if (opts[i] === chosen) b.classList.add('wrong');
+  });
+  const last = day === post.questions.length - 1;
+  const next = el('button', {class:'btn', type:'button', on:() => {
+    day++;
+    last ? result() : ask();
+  }}, last ? 'Ver meu resultado' : 'Ir para o dia ' + (day + 2));
+
+  const body = el('div', {class:'body'},
+    el('h3', {tabindex:'-1'}, chosen.ok ? 'Certo. Sua reputação subiu.' : 'Não foi dessa vez.'),
+    chosen.ok ? null : el('p', {}, chosen.why),
+    chosen.ok ? null : el('p', {class:'comment'}, '// resposta certa: ' + right.t),
+    el('p', {}, right.why),
+    el('p', {class:'src'}, 'Fonte: ', el('a', {href:q.source.url, target:'_blank', rel:'noopener'}, q.source.label))
+  );
+  const box = el('div', {class:'term ' + (chosen.ok ? 'good' : 'miss'), role:'status'},
+    el('div', {class:'bar', 'aria-hidden':'true'}, el('i'), el('i'), el('i')), body);
+  const fresh = stairs(false);
+  app.querySelector('.stairs').replaceWith(fresh);
+  const bar = fresh.children[day], height = bar.style.getPropertyValue('--h');
+  bar.style.setProperty('--h', '6%');
+  requestAnimationFrame(() => requestAnimationFrame(() => bar.style.setProperty('--h', height)));
+  app.append(box, next);
+  box.scrollIntoView({behavior:'smooth', block:'nearest'});
+  body.querySelector('h3').focus({preventScroll:true});
+}
+
+function result(){
+  const total = post.questions.length;
+  const score = answers.filter(a => a.ok).length;
+  const rank = post.ranks.find(r => score >= r.min);
+  const prev = Number(store('dmc-best-' + post.id) || 0);
+  if (score > prev || store('dmc-best-' + post.id) === null) store('dmc-best-' + post.id, score);
+  pill.textContent = 'resultado';
+  const misses = answers.filter(a => !a.ok);
+  const url = location.origin + location.pathname + '?post=' + encodeURIComponent(post.id);
+  const msg = 'Fiz ' + score + ' de ' + total + ' no quiz de ' + post.title + ' do @_devmaycry. Você consegue mais?';
+  const share = el('button', {class:'btn ghost', type:'button', on: async () => {
+    try {
+      if (navigator.share) await navigator.share({text:msg, url});
+      else { await navigator.clipboard.writeText(msg + ' ' + url); share.textContent = 'Link copiado'; }
+    } catch (e) { /* a pessoa cancelou o compartilhamento */ }
+  }}, 'Desafiar um amigo');
+  show(
+    stairs(true),
+    el('p', {class:'score'}, String(score), el('small', {}, ' de ' + total)),
+    el('h2', {}, rank.title),
+    el('p', {class:'lead'}, rank.text),
+    misses.length ? el('h2', {}, 'Por que você errou') : null,
+    misses.map(m => el('div', {class:'term miss review'},
+      el('div', {class:'body'},
+        el('h3', {}, m.q.q),
+        el('p', {}, 'Você marcou: ' + m.chosen.t + '. ' + m.chosen.why),
+        el('p', {class:'fix'}, '// certo: ' + m.right.t),
+        el('p', {}, m.right.why)))),
+    el('button', {class:'btn', type:'button', on:start}, 'Jogar de novo'),
+    share
+  );
+}
+
+document.addEventListener('keydown', e => {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  const b = document.querySelectorAll('.opt:not(:disabled)')[Number(e.key) - 1];
+  if (b) b.click();
+});
+
+const wanted = params.get('post');
+post = POSTS.find(p => p.id === wanted) || (POSTS.length === 1 ? POSTS[0] : null);
+post ? start() : home();
+</script>
+</body>
+</html>
