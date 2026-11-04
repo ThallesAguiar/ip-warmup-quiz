@@ -28,6 +28,8 @@ body{
 .wrap{max-width:680px;margin:0 auto;padding:20px 16px 48px}
 header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:24px}
 .logo{font:400 28px/1 "Kaushan Script",cursive;color:var(--gold);text-decoration:none}
+.top{display:flex;align-items:center;gap:10px}
+.lang{font:700 14px/1 var(--mono);color:var(--gold);text-decoration:none;padding:8px 2px}
 .pill{font:400 14px/1 var(--mono);color:var(--blue);border:2px solid var(--line);border-radius:99px;padding:8px 14px;white-space:nowrap}
 h1{font-size:clamp(44px,12vw,72px);line-height:.98;letter-spacing:-.03em;margin:0 0 12px}
 h2{font-size:clamp(24px,5.4vw,32px);line-height:1.18;letter-spacing:-.015em;margin:0 0 20px}
@@ -68,7 +70,8 @@ a{color:var(--blue)}
 
 .btn{display:inline-block;width:100%;padding:15px 20px;font:700 18px/1.2 var(--sans);color:var(--ink);background:var(--gold);border:2px solid var(--gold);border-radius:10px;cursor:pointer;text-align:center;text-decoration:none}
 .btn:hover{background:#ffd93b}
-.btn.ghost{background:transparent;color:var(--text);border-color:var(--line);margin-top:10px}
+.btn.ghost{background:transparent;color:var(--text);border-color:var(--line);margin-bottom:10px}
+.btn + .btn.ghost{margin-top:10px}
 .btn.ghost:hover{border-color:var(--blue);background:transparent}
 .list{display:grid;gap:10px;margin:0 0 20px}
 .score{font:700 clamp(56px,16vw,88px)/1 var(--sans);letter-spacing:-.03em;margin:0 0 4px}
@@ -85,7 +88,10 @@ footer{margin-top:32px;font:400 14px/1.6 var(--mono);color:var(--blue)}
 <div class="wrap">
   <header>
     <a class="logo" href="./">DevMayCry</a>
-    <span class="pill" id="pill" aria-live="polite"></span>
+    <div class="top">
+      <span class="pill" id="pill" aria-live="polite"></span>
+      <a class="lang" href="en/" hreflang="en" lang="en" aria-label="Play in English">EN</a>
+    </div>
   </header>
   <main id="app"></main>
   <footer>
@@ -104,14 +110,15 @@ footer{margin-top:32px;font:400 14px/1.6 var(--mono);color:var(--blue)}
    Copie um bloco dentro de POSTS e troque o conteúdo.
    - id: vira o link direto, por exemplo index.html?post=ip-warmup
    - questions: use 7 perguntas, uma para cada dia da escada
+   - links: cole o link do post em cada rede; link vazio não aparece no jogo
    - options: uma opção com ok:true; todas precisam de "why", a explicação
+   - toda pergunta deve ter sido ensinada no post: não use fatos que ficaram de fora
    O código abaixo de POSTS não precisa mudar.
    ========================================================================== */
 const SRC = {
   resendWarm: {label:'Resend: guia de warm-up', url:'https://resend.com/docs/knowledge-base/warming-up'},
   resendIp:   {label:'Resend: como funcionam IPs dedicados', url:'https://resend.com/docs/knowledge-base/how-do-dedicated-ips-work'},
   aws:        {label:'AWS SES: warmup de IPs dedicados', url:'https://docs.aws.amazon.com/ses/latest/dg/dedicated-ip-warming.html'},
-  google:     {label:'Google: FAQ para remetentes', url:'https://support.google.com/mail/answer/14229414?hl=en'},
   yahoo:      {label:'Yahoo Sender Hub', url:'https://senders.yahooinc.com/best-practices'}
 };
 
@@ -120,6 +127,11 @@ const POSTS = [
     id: 'ip-warmup',
     title: 'IP Warmup',
     hook: 'Como cartão novo, IP novo começa enviando pouco. Passe pelos 7 dias de aquecimento e veja até onde sua reputação sobe.',
+    links: {
+      instagram: 'https://www.instagram.com/p/DfU4fGODSQb/',
+      threads: '',
+      tiktok: ''
+    },
     questions: [
       {
         q: 'Uma loja trocou de IP e quer enviar 50 mil e-mails hoje. O que você faz?',
@@ -149,21 +161,21 @@ const POSTS = [
         ]
       },
       {
-        q: 'Qual é a meta de taxa de spam no Gmail?',
-        source: SRC.google,
+        q: 'Durante o warmup, qual limite de spam o guia da Resend usa como referência?',
+        source: SRC.resendWarm,
         options: [
-          {ok:true, t:'Abaixo de 0,1%', why:'O Google pede para ficar abaixo de 0,1% e nunca chegar a 0,3%. Acima de 0,1%, a entrega já pode piorar para quem envia em massa.'},
-          {t:'Exatamente 0,3%', why:'0,3% é o teto, não a meta. Pense numa estrada: a meta é dirigir com folga, não encostar no ponto da multa.'},
-          {t:'Abaixo de 1%', why:'1% é mais de três vezes o limite de 0,3%. A taxa precisa ficar bem mais baixa, abaixo de 0,1%.'}
+          {ok:true, t:'Abaixo de 0,08%', why:'O guia usa 0,08% de spam como referência. Se a taxa subir, é hora de reduzir o ritmo.'},
+          {t:'Abaixo de 4%', why:'4% é a referência para bounce, não para spam. Para spam, o limite é bem menor: 0,08%.'},
+          {t:'Abaixo de 1%', why:'1% é mais de dez vezes a referência do guia. Para spam, o limite é 0,08%.'}
         ]
       },
       {
-        q: 'Um cliente novo envia 20 mil e-mails por mês. IP dedicado é uma boa ideia?',
+        q: 'O que um IP dedicado precisa para seguir aquecido?',
         source: SRC.resendIp,
         options: [
-          {ok:true, t:'Não, o volume é baixo demais para manter o IP aquecido', why:'A Resend avisa que menos de 90 mil e-mails por mês pode não bastar. Além disso, ele é um remetente novo, sem histórico.'},
-          {t:'Sim, porque ele sai dos vizinhos ruins', why:'Sair dos vizinhos é uma vantagem real, mas não resolve tudo. Com pouco volume, o IP não ganha histórico suficiente.'},
-          {t:'Sim, IP dedicado sempre melhora a entrega', why:'A Resend diz que IP dedicado não é solução mágica. Ele também expõe mais o seu comportamento de envio.'}
+          {ok:true, t:'Volume de envio constante', why:'No dedicado, o IP é só seu. Sem envio constante, ele perde o aquecimento, como um cartão que quase não é usado.'},
+          {t:'Só do warmup inicial, uma vez', why:'O warmup não vale para sempre. Depois dele, o IP ainda precisa de envio constante.'},
+          {t:'Grandes envios de vez em quando', why:'Mudanças bruscas de volume prejudicam a reputação do IP. O que mantém o aquecimento é a constância.'}
         ]
       },
       {
@@ -195,6 +207,7 @@ const POSTS = [
 ];
 
 /* ---------- Motor do jogo ---------- */
+const NETWORKS = {instagram:'Instagram', threads:'Threads', tiktok:'TikTok'};
 const app = document.getElementById('app');
 const pill = document.getElementById('pill');
 const params = new URLSearchParams(location.search);
@@ -342,6 +355,8 @@ function result(){
         el('p', {}, 'Você marcou: ' + m.chosen.t + '. ' + m.chosen.why),
         el('p', {class:'fix'}, '// certo: ' + m.right.t),
         el('p', {}, m.right.why)))),
+    Object.entries(post.links || {}).filter(([, href]) => href).map(([net, href]) =>
+      el('a', {class:'btn ghost', href, target:'_blank', rel:'noopener'}, 'Rever o post no ' + NETWORKS[net])),
     el('button', {class:'btn', type:'button', on:start}, 'Jogar de novo'),
     share
   );
